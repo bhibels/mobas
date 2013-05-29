@@ -7,12 +7,21 @@ $functions = array( 'mod_assign_submission_mobas_get_mobas' =>array(
         'type'  =>'read',
     ),
 
+'mod_assign_submission_mobas_uploadhtml'=>array(
+        'classname' => 'mod_assign_submission_mobas_external',
+        'methodname' => 'uploadhtml',
+        'classpath' =>'mod/assign/submission/mobas/externallib.php',
+        'description' => 'upload to online html component of given assignment',
+        'type'  =>'write',
+    ),
+
 
 );
 
 $services = array(
       'Mobas Submission' => array(                                                //the name of the web service
           'functions' => array ( 'mod_assign_submission_mobas_get_mobas',
+                        'mod_assign_submission_mobas_uploadhtml',
                         'core_files_upload',
                         'core_enrol_get_users_courses',
                         'core_course_get_contents',

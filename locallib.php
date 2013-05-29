@@ -104,7 +104,7 @@ class assign_submission_mobas extends assign_submission_plugin {
     }
     
     /**
-     * Get the default setting for file submission plugin
+     * Get the default setting for mobas submission plugin
      *
      * @global stdClass $CFG
      * @global stdClass $COURSE
@@ -114,45 +114,8 @@ class assign_submission_mobas extends assign_submission_plugin {
     public function get_settings(MoodleQuickForm $mform) {
         global $CFG, $COURSE;
 
-      /*  $defaultmaxfilesubmissions = $this->get_config('maxfilesubmissions');
-        $defaultmaxsubmissionsizebytes = $this->get_config('maxsubmissionsizebytes');
-        $defaultname = $this->get_config('defaultname');
-        $defaultnameoverride = $this->get_config('nameoverride');
-        if ($defaultnameoverride === false) { // Fallback default for defaultname is 0 anyway, so false should suffice
-            $defaultnameoverride = 1;
-        }
+        $mobastype=$this->get_config('type');
 
-        
-        $settings = array();
-        for($i = 1; $i <= ASSIGN_MAX_SUBMISSION_ONLINERECORDINGS; $i++) {
-            $options[$i] = $i;
-        }
-        
-        $mform->addElement('select', 'assignsubmission_onlineaudio_maxfiles', get_string('maxfilessubmission', 'assignsubmission_onlineaudio'), $options);
-        $mform->addHelpButton('assignsubmission_onlineaudio_maxfiles', 'maxfilessubmission', 'assignsubmission_onlineaudio');
-        $mform->setDefault('assignsubmission_onlineaudio_maxfiles', $defaultmaxfilesubmissions);
-        $mform->disabledIf('assignsubmission_onlineaudio_maxfiles', 'assignsubmission_onlineaudio_enabled', 'eq', 0);
-
-        $filenameoptions = array( 0 => get_string("nodefaultname", "assignment_onlineaudio"), 1 => get_string("defaultname1", "assignment_onlineaudio"), 2 =>get_string("defaultname2", "assignment_onlineaudio"));
-        $mform->addElement('select', 'assignsubmission_onlineaudio_defaultname', get_string("defaultname", "assignment_onlineaudio"), $filenameoptions);
-        $mform->addHelpButton('assignsubmission_onlineaudio_defaultname', 'defaultname', 'assignment_onlineaudio');
-        $mform->setDefault('assignsubmission_onlineaudio_defaultname', $defaultname);
-        $mform->disabledIf('assignsubmission_onlineaudio_defaultname', 'assignsubmission_onlineaudio_enabled', 'eq', 0);
-
-        $ynoptions = array( 0 => get_string('no'), 1 => get_string('yes'));
-        $mform->addElement('select', 'assignsubmission_onlineaudio_nameoverride', get_string("allownameoverride", "assignment_onlineaudio"), $ynoptions);
-        $mform->addHelpButton('assignsubmission_onlineaudio_nameoverride', 'allownameoverride', 'assignment_onlineaudio');
-        $mform->setDefault('assignsubmission_onlineaudio_nameoverride', $defaultnameoverride);
-        $mform->disabledIf('assignsubmission_onlineaudio_nameoverride', 'assignsubmission_onlineaudio_enabled', 'eq', 0);
-        $mform->disabledIf('assignsubmission_onlineaudio_nameoverride', 'assignsubmission_onlineaudio_defaultname', 'eq', 0);
-    */
-
-        //$mform->addElement('header', 'mobasfieldset', get_string('mobasfieldset', 'mobas'));
-
-        // Adding the standard "intro" and "introformat" fields
-        //$this->add_intro_editor();
-
-        //-------------------------------------------------------------------------------
         // Adding the rest of mobas settings, spreeading all them into this fieldset
         // or adding more fieldsets ('header' elements) if needed for better logic
 
@@ -161,91 +124,26 @@ class assign_submission_mobas extends assign_submission_plugin {
         $mform->addElement('editor', 'mobascontent', get_string('lblcontent','assignsubmission_mobas'));
         $mform->setType('contenteditor', PARAM_RAW); // no XSS prevention here, users must be trusted
         $mform->disabledIf('assignsubmission_mobascontent', 'assignsubmission_mobas_enabled', 'eq', 0);
-        $options = array();
-        $options[]="photostory";
+        $options = array(5 =>'Work Diary',8=>'Digital Story',9=>'Job Safety Analysis');
         $mform->addElement('select', 'assignsubmission_mobas_type', get_string('lbltype', 'assignsubmission_mobas'), $options);
+        $mform->setDefault('assignsubmission_mobas_type',$mobastype);
 
         $mform->addHelpButton('assignsubmission_mobas_type', 'lbltype', 'assignsubmission_mobas');
         $mform->disabledIf('assignsubmission_mobas_type', 'assignsubmission_mobas_enabled', 'eq', 0);
     }
     
     /**
-     * Save the settings for file submission plugin
+     * Save the settings for mobas submission plugin
      *
      * @param stdClass $data
      * @return bool 
      */
     public function save_settings(stdClass $data) {
-        /*$this->set_config('maxfilesubmissions', $data->assignsubmission_onlineaudio_maxfiles);
-        $this->set_config('defaultname', $data->assignsubmission_onlineaudio_defaultname);
-        $this->set_config('nameoverride', $data->assignsubmission_onlineaudio_nameoverride);
-        */
+        $this->set_config('type', $data->assignsubmission_mobas_type);
         return true;
     }
 
 
-    /**
-     * Produces a list of links to the files uploaded by a user
-     *
-     * @param $userid int optional id of the user. If 0 then $USER->id is used.
-     * @param $return boolean optional defaults to false. If true the list is returned rather than printed
-     * @return string optional
-     */
-    public function print_user_files($submissionid, $allowdelete=true) {
-        global $CFG, $OUTPUT, $DB;
-
-        $strdelete = get_string('delete');
-        $output = '';
-        $fs = get_file_storage();
-        $files = $fs->get_area_files($this->assignment->get_context()->id, 'assignsubmission_mobas', ASSIGN_FILEAREA_SUBMISSION_MOBAS, $submissionid, "id", false);
-        if (!empty($files)) {
-            require_once($CFG->dirroot . '/mod/assignment/locallib.php');
-            if ($CFG->enableportfolios) {
-                require_once($CFG->libdir.'/portfoliolib.php');
-                $button = new portfolio_add_button();
-            }
-            if (!empty($CFG->enableplagiarism)) {
-                require_once($CFG->libdir . '/plagiarismlib.php');
-            }
-            foreach ($files as $file) {
-                $filename = $file->get_filename();
-                $filepath = $file->get_filepath();
-                $mimetype = $file->get_mimetype();
-                $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->assignment->get_context()->id.'/assignsubmission_mobas/submission_mobas/'.$submissionid.'/'.$filename);
-                $output .= '<span style="white-space:nowrap;"><img src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" class="icon" alt="'.$mimetype.'" />';
-                // Dummy link for media filters
-                $filtered = filter_text('<a href="'.$path.'" style="display:none;"> </a> ', $this->assignment->get_course()->id);
-                $filtered = preg_replace('~<a.+?</a>~','',$filtered);
-                // Add a real link after the dummy one, so that we get a proper download link no matter what
-                $output .= $filtered . '</span><a href="'.$path.'" >'.s($filename).'</a>';
-                if($allowdelete) {
-                    $delurl  = "$CFG->wwwroot/mod/assign/submission/mobas/delete.php?id={$this->assignment->get_course_module()->id}&amp;sid={$submissionid}&amp;path=$filepath&amp;file=$filename";//&amp;userid={$submission->userid} &amp;mode=$mode&amp;offset=$offset
-
-                    $output .= '<a href="'.$delurl.'">&nbsp;'
-                              .'<img title="'.$strdelete.'" src="'.$OUTPUT->pix_url('/t/delete').'" class="iconsmall" alt="" /></a> ';
-                }
-                if ($CFG->enableportfolios && $this->portfolio_exportable() && has_capability('mod/assignment:exportownsubmission', $this->$this->assignment->get_context())) {
-                    $button->set_callback_options('assign_portfolio_caller', array('cmid' => $this->assignment->get_course_module()->id, 'sid'=>$submissionid, 'area'=>ASSIGN_FILEAREA_SUBMISSION_ONLINEAUDIO), '/mod/assign/portfolio_callback.php');
-                    $button->set_format_by_file($file);
-                    $output .= $button->to_html(PORTFOLIO_ADD_ICON_LINK);
-                }
-                if (!empty($CFG->enableplagiarism)) {
-                    // Wouldn't it be nice if the assignment's get_submission method wasn't private?
-                    $submission = $DB->get_record('assign_submission', array('assignment'=>$this->assignment->get_instance()->id, 'id'=>$submissionid), '*', MUST_EXIST);
-                    $output .= plagiarism_get_links(array('userid'=>$submission->userid, 'file'=>$file, 'cmid'=>$this->assignment->get_course_module()->id, 'course'=>$this->assignment->get_course(), 'assignment'=>$this->assignment));
-                }
-                $output .= '<br />';
-            }
-            if ($CFG->enableportfolios && count($files) > 1  && $this->portfolio_exportable() && has_capability('mod/assignment:exportownsubmission', $this->$this->assignment->get_context())) {
-                $button->set_callback_options('assign_portfolio_caller', array('cmid' => $this->assignment->get_course_module()->id, 'sid'=>$submissionid, 'area'=>ASSIGN_FILEAREA_SUBMISSION_ONLINEAUDIO), '/mod/assign/portfolio_callback.php');
-                $output .= '<br />'  . $button->to_html(PORTFOLIO_ADD_TEXT_LINK);
-            }
-        }
-
-        $output = '<div class="files" style="float:left;margin-left:25px;">'.$output.'</div><br clear="all" />';
-
-        return $output;
-    }
    
     /**
      * Add elements to submission form
@@ -310,140 +208,6 @@ class assign_submission_mobas extends assign_submission_plugin {
         return true;
     }
 
-    /**
-     * Count the number of files
-     * 
-     * @param int $submissionid
-     * @param string $area
-     * @return int 
-     */
-    private function count_files($submissionid, $area) {
-
-        $fs = get_file_storage();
-        $files = $fs->get_area_files($this->assignment->get_context()->id, 'assignsubmission_mobas', $area, $submissionid, "id", false);
-
-        return count($files);
-    }
-
-    /**
-     * Save the uploaded recording and trigger plagiarism plugin, if enabled, to scan the uploaded files via events trigger
-     *
-     * @global stdClass $USER
-     * @global moodle_database $DB
-     * @param stdClass $submission
-     * @param stdClass $file
-     * @return bool 
-     */
-    public function add_recording(stdClass $submission) {
-        global $USER, $DB;
-
-        $fs = get_file_storage();
-        $filesubmission = $this->get_file_submission($submission->id);
-
-        // Process uploaded file
-        if (!array_key_exists('assignment_file', $_FILES)) {
-            return false;
-        }
-        $filedetails = $_FILES['assignment_file'];
-
-        $filename = $filedetails['name'];
-        $filesrc = $filedetails['tmp_name'];
-
-        if (!is_uploaded_file($filesrc)) {
-            return false;
-        }
-        
-        $ext = substr(strrchr($filename, '.'), 1);
-        if (!preg_match('/^(mp3|wav|wma)$/i',$ext)) {
-            return false;
-        }
-        
-        $temp_name=basename($filename,".$ext"); // We want to clean the file's base name only
-        // Run param_clean here with PARAM_FILE so that we end up with a name that other parts of Moodle
-        // (download script, deletion, etc) will handle properly.  Remove leading/trailing dots too.
-        $temp_name=trim(clean_param($temp_name, PARAM_FILE),".");
-        $filename=$temp_name.".$ext";
-        // check for filename already existing and add suffix #.
-        $n=1;
-        while($fs->file_exists($this->assignment->get_context()->id, 'assignsubmission_mobas', ASSIGN_FILEAREA_SUBMISSION_MOBAS, $submission->id, '/', $filename)) {
-            $filename=$temp_name.'_'.$n++.".$ext";
-        }
-
-        // Create file
-        $fileinfo = array(
-              'contextid' => $this->assignment->get_context()->id,
-              'component' => 'assignsubmission_mobas',
-              'filearea' => ASSIGN_FILEAREA_SUBMISSION_MOBAS,
-              'itemid' => $submission->id,
-              'filepath' => '/',
-              'filename' => $filename
-              );
-        if ($newfile = $fs->create_file_from_pathname($fileinfo, $filesrc)) {
-            $files = $fs->get_area_files($this->assignment->get_context()->id, 'assignsubmission_mobas', ASSIGN_FILEAREA_SUBMISSION_MOBAS, $submission->id, "id", false);
-            $count = $this->count_files($submission->id, ASSIGN_FILEAREA_SUBMISSION_MOBAS);
-            // send files to event system
-            // Let Moodle know that an assessable file was uploaded (eg for plagiarism detection)
-            $eventdata = new stdClass();
-            $eventdata->modulename = 'assign';
-            $eventdata->cmid = $this->assignment->get_course_module()->id;
-            $eventdata->itemid = $submission->id;
-            $eventdata->courseid = $this->assignment->get_course()->id;
-            $eventdata->userid = $USER->id;
-            if ($count > 1) {
-                $eventdata->files = $files;
-            }
-                $eventdata->file = $files;
-            events_trigger('assessable_file_uploaded', $eventdata);
-
-
-            if ($filesubmission) {
-                $filesubmission->numfiles = $this->count_files($submission->id, ASSIGN_FILEAREA_SUBMISSION_MOBAS);
-                return $DB->update_record('assignsubmission_mobas', $filesubmission);
-            } else {
-                $filesubmission = new stdClass();
-                $filesubmission->numfiles = $this->count_files($submission->id, ASSIGN_FILEAREA_SUBMISSION_MOBAS);
-                $filesubmission->submission = $submission->id;
-                $filesubmission->assignment = $this->assignment->get_instance()->id;
-                return $DB->insert_record('assignsubmission_mobas', $filesubmission) > 0;
-            }
-        }
-    }
-
-    /**
-     * Produce a list of files suitable for export that represent this feedback or submission
-     * 
-     * @param stdClass $submission The submission
-     * @return array - return an array of files indexed by filename
-     */
-    public function get_files(stdClass $submission) {
-        $result = array();
-        $fs = get_file_storage();
-
-        $files = $fs->get_area_files($this->assignment->get_context()->id, 'assignsubmission_mobas', ASSIGN_FILEAREA_SUBMISSION_MOBAS, $submission->id, "timemodified", false);
-
-        foreach ($files as $file) {
-            $result[$file->get_filename()] = $file;
-        }
-        return $result;
-    }
-    
-    /**
-     * Display the list of files  in the submission status table
-     *
-     * @param stdClass $submission
-     * @return string
-     */
-    public function view_summary(stdClass $submission, & $showviewlink) {
-        $count = $this->count_files($submission->id, ASSIGN_FILEAREA_SUBMISSION_MOBAS);
-
-        // show we show a link to view all files for this plugin?
-        $showviewlink = $count > ASSIGN_SUBMISSION_ONLINEAUDIO_MAX_SUMMARY_FILES;
-        if ($count <= ASSIGN_SUBMISSION_ONLINEAUDIO_MAX_SUMMARY_FILES) {
-            return $this->print_user_files($submission->id, false);
-        } else {
-            return get_string('countfiles', 'assignsubmission_mobas', $count);
-        }
-    }
 
     /**
      * No full submission view - the summary contains the list of files and that is the whole submission

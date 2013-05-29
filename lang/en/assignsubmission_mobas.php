@@ -38,16 +38,22 @@ $string['mobasname'] = 'Mobas mobile assessment';
 $string['mobas_help'] = 'This is the content of the help tooltip associated with the mobasname field. Markdown syntax is supported.';
 $string['mobas'] = 'Mobas';
 $string['pluginadministration'] = 'MobAs administration';
+
+
+$string['lbltype'] = 'Mobile Activity Type';
+$string['lbltype_help']='Activity types:<ul><li>Work Diary - dated sections for each entry </li><li>Digital Story - respond to question with set of pages each including text and image </li><li>Job Safety Assessment - assign risk and likelihood for given issues</li></ul>';
 $string['lblcontent'] = 'Content';
 $string['pluginname'] = 'Mobas';
 
 $string['enabled']='mobas enabled';
 $string['enabled_help']='mobas enabled help';
 //Form
-$string['lblcontent']='mobas lblcontent';
-$string['lbltype']='mobas lbltype';
-$string['lbltype_help']='mobas lbltype_help';
 //Capabilities
 $string['mobas:addinstance']='Add Mobas activity to course';
 $string['mobas:view']='View Mobas activity';
 $string['mobas:submit']='Submit Mobas activity';
+
+
+//settings
+$string['default']='JSON for digital story';
+$string['default_help']='set number of pages, etc';

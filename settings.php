@@ -21,3 +21,12 @@
  * @copyright 2012 Paul Nicholls
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+
+//global settings
+//set up the json structures here?
+//or allow importt from file to change existing ones?
+
+$settings->add(new admin_setting_configtextarea('assignsubmission_mobas/default',
+                   new lang_string('default', 'assignsubmission_mobas'),
+                   new lang_string('default_help', 'assignsubmission_mobas'), 0));
