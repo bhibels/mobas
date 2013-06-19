@@ -124,7 +124,7 @@ class assign_submission_mobas extends assign_submission_plugin {
         $mform->addElement('editor', 'mobascontent', get_string('lblcontent','assignsubmission_mobas'));
         $mform->setType('contenteditor', PARAM_RAW); // no XSS prevention here, users must be trusted
         $mform->disabledIf('assignsubmission_mobascontent', 'assignsubmission_mobas_enabled', 'eq', 0);
-        $options = array(5 =>'Work Diary',8=>'Digital Story',9=>'Job Safety Analysis');
+        $options = array(1 =>'Work Diary',2=>'Create Procedure/Process',3=>'Job Safety Analysis',4=>'Demonstration Checklist');
         $mform->addElement('select', 'assignsubmission_mobas_type', get_string('lbltype', 'assignsubmission_mobas'), $options);
         $mform->setDefault('assignsubmission_mobas_type',$mobastype);
 
