@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,20 +14,25 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
  * English strings for mobas
  *
- * You can have a rather longer description of the file as well,
- * if you like, and it can span multiple lines.
- *
- * @package    mod
- * @subpackage mobas
- * @copyright  2011 Your Name
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   assignsubmission_mobas
+ * @copyright 2013  Box Hill Institute
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+$string['allowmobassubmissions'] = 'Enabled';
+$string['default'] = 'Disabled by default';
+$string['default_help'] = 'If set, this submission method will be enabled by default for all new assignments.';
+$string['enabled'] = 'Mobas';
+$string['enabled_help'] = 'If enabled, students are able to use a web app (online/offline) to collect images and text for submission to moodle.';
+$string['nosubmission'] = 'Nothing has been submitted for this assignment';
+$string['mobas'] = 'Mobas';
+$string['mobassubmission'] = 'Allow mobas submission';
+$string['pluginname'] = 'Mobas submissions';
+$string['numwords'] = '({$a} words)';
+$string['numwordsforlog'] = 'Submission word count: {$a} words';
 
 $string['modulename'] = 'Mobas';
 $string['modulenameplural'] = 'Mobas';
@@ -39,14 +43,20 @@ $string['mobas_help'] = 'This is the content of the help tooltip associated with
 $string['mobas'] = 'Mobas';
 $string['pluginadministration'] = 'MobAs administration';
 
+//Form settings
+$string['enabled']='mobas enabled';
+$string['enabled_help']='Mobas enables students to submit text and image content using the Mobas mobile app.';
+$string['lbltype'] = 'Mobas Type';
+$string['lbltype_help']= 'Choose from the following mobile activity types:<ul><li><strong>Demonstration checklist</strong>: Students are required to demonstrate skills according to specified performance criteria.</li><li><strong>Job safety analysis (JSA)</strong>: Students are required to complete a job safety analysis (JSA) for their workplace.</li><li><strong>Work diary</strong>: Students are required to record their workplace activities.</li><li><strong>Create procedure or process</strong>: Students are required to create a procedure or process for their workplace.</li></ul>';
 
-$string['lbltype'] = 'Mobile Activity Type';
-$string['lbltype_help']='Activity types:<ul><li>Work Diary - dated sections for each entry </li><li>Digital Story - respond to question with set of pages each including text and image </li><li>Job Safety Assessment - assign risk and likelihood for given issues</li></ul>';
-$string['lblcontent'] = 'Content';
+$string['lblcontent'] = 'Mobas Content';
+$string['lblcontent_help'] = '<dl><dt>Demonstration Checklist</dt><dd>Put each task name on a separate line</dd></dl>';
+$string['lblsubmitcode']='Mobas submission code';
+$string['lblsubmitcode_help']='Demonstration checklist requires the assessor input a code to authenticate the assessment. Students should not see this code.';
+
+
 $string['pluginname'] = 'Mobas';
 
-$string['enabled']='mobas enabled';
-$string['enabled_help']='mobas enabled help';
 //Form
 //Capabilities
 $string['mobas:addinstance']='Add Mobas activity to course';

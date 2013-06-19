@@ -1,5 +1,4 @@
-<?php
-
+<?PHP
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,18 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Using moodle onlineaudio submission as a starting point
+ * This file contains the moodle hooks for the submission onlinetext plugin
  *
- * @package assignsubmission_mobas
+ * @package   assignsubmission_mobas
  * @copyright 2013 Box Hill Institute
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+ //todo: remove files submission stuff? or is req for when submission has files and other stuff?
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * Serves assignment submissions and other files.
  *
- * @global stdClass USER
  * @param mixed $course course or id of the course
  * @param mixed $cm course module or id of the course module
  * @param context $context
@@ -38,7 +39,7 @@ defined('MOODLE_INTERNAL') || die();
  */
 function assignsubmission_mobas_pluginfile($course, $cm, context $context, $filearea, $args, $forcedownload) {
     global $USER, $DB;
-    
+
     if ($context->contextlevel != CONTEXT_MODULE) {
         return false;
     }
@@ -47,7 +48,7 @@ function assignsubmission_mobas_pluginfile($course, $cm, context $context, $file
     $itemid = (int)array_shift($args);
     $record = $DB->get_record('assign_submission', array('id'=>$itemid), 'userid, assignment', MUST_EXIST);
     $userid = $record->userid;
-    
+
     if (!$assign = $DB->get_record('assign', array('id'=>$cm->instance))) {
         return false;
     }

@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/assign/submission/mobas/db" VERSION="20130417" COMMENT="XMLDB file for Moodle mod/assign/submission/mobas"
+<XMLDB PATH="mod/assign/submission/mobas/db" VERSION="20130601" COMMENT="XMLDB file for Moodle mod/assign/submission/mobas"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="assignsubmission_mobas" COMMENT="Default comment for mobas, please edit me">
+    <TABLE NAME="assignsubmission_mobas" COMMENT="Info about mobas submission">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="assignment"/>
-        <FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="submission"/>
-        <FIELD NAME="submission" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" PREVIOUS="assignment" NEXT="numfiles"/>
-        <FIELD NAME="numfiles" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="submission" NEXT="onlinetext"/>
-        <FIELD NAME="onlinetext" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="numfiles" NEXT="onlineformat"/>
-        <FIELD NAME="onlineformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="onlinetext"/>
+        <FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="submission"/>
+        <FIELD NAME="submission" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="assignment" NEXT="mobas"/>
+        <FIELD NAME="mobas" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The text for this mobas submission." PREVIOUS="submission" NEXT="onlineformat"/>
+        <FIELD NAME="onlineformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The format for this mobas submission." PREVIOUS="mobas"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="assignment"/>
-        <KEY NAME="assignment" TYPE="foreign" FIELDS="assignment" REFTABLE="assign" REFFIELDS="id" PREVIOUS="primary" NEXT="submission"/>
-        <KEY NAME="submission" TYPE="foreign" FIELDS="submission" REFTABLE="assign_submission" REFFIELDS="id" PREVIOUS="assignment"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="The unique id for this mobas submission." NEXT="assignment"/>
+        <KEY NAME="assignment" TYPE="foreign" FIELDS="assignment" REFTABLE="assign" REFFIELDS="id" COMMENT="The assignment instance this mobas submission relates to." PREVIOUS="primary" NEXT="submission"/>
+        <KEY NAME="submission" TYPE="foreign" FIELDS="submission" REFTABLE="assign_submission" REFFIELDS="id" COMMENT="The submission this mobas submission relates to." PREVIOUS="assignment"/>
       </KEYS>
     </TABLE>
   </TABLES>

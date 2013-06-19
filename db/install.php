@@ -15,18 +15,37 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the version information for the mobas submission plugin
- * it's modelled after assignsubmssion_onlinetext, since it's mostly just adding
- * webservices to that
- * 
- * @package    assignsubmission_mobas
- * @copyright 2013 Box Hill Institute 
+ * Post-install code for the submission_mobas module.
+ *
+ * @package assignsubmission_mobas
+ * @copyright 2013 Box Hill Institute
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2013060300;
-//todo: change requires version to recent 2.4.1
-$plugin->requires  = 2012010100;
-$plugin->component = 'assignsubmission_mobas';
+
+/**
+ * Code run after the assignsubmission_mobas module database tables have been created.
+ * @return bool
+ */
+function xmldb_assignsubmission_mobas_install() {
+    global $CFG;
+
+    // do the install
+
+    require_once($CFG->dirroot . '/mod/assign/adminlib.php');
+    // set the correct initial order for the plugins
+    $pluginmanager = new assign_plugin_manager('assignsubmission');
+
+    $pluginmanager->move_plugin('mobas', 'down');
+    $pluginmanager->move_plugin('mobas', 'down');
+    $pluginmanager->move_plugin('mobas', 'down');
+
+    // do the upgrades
+    return true;
+
+
+
+}
+
+

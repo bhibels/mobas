@@ -1,4 +1,4 @@
-<?php 
+<?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,94 +15,68 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the definition for the library class for file submission plugin
- * 
+ * This file contains the definition for the library class for mobas submission plugin
+ *
  * This class provides all the functionality for the new assign module.
  *
- * @package assignsubmission_onlineaudio
- * @copyright 2012 Paul Nicholls
+ * @package assignsubmission_mobas
+ * @copyright 2013 Box Hill Institute 
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/** Include eventslib.php */
-//require_once($CFG->libdir.'/eventslib.php');
+//todo: is file area required?
 
 defined('MOODLE_INTERNAL') || die();
 /**
- * File areas for file submission assignment
+ * File area for online text submission assignment
  */
+define('ASSIGNSUBMISSION_MOBAS_FILEAREA', 'submissions_mobas');
 
-//define('ASSIGNSUBMISSION_ONLINEAUDIO_MAX_SUMMARY_FILES', 5);
-define('ASSIGNSUBMISSION_MOBAS_FILEAREA', 'submission_mobas');
-
-/*
- * library class for online audio recording submission plugin extending submission plugin base class
- * 
- * @package   assignsubmission_onlineaudio
- * @copyright 2012 Paul Nicholls
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+/**
+ * library class for mobas  submission plugin extending submission plugin base class
+ *
  */
 class assign_submission_mobas extends assign_submission_plugin {
-    
+
     /**
-     * Get the name of the file submission plugin
-     * @return string 
+     * Get the name of the mobas submission plugin
+     * @return string
      */
     public function get_name() {
         return get_string('mobas', 'assignsubmission_mobas');
     }
 
-    /**
-     * Load the submission object for a particular user, optionally creating it if required
-     * I don't want to have to do this, but it's private on the assign() class, so can't be used!
-     *
-     * @param int $userid The id of the user whose submission we want or 0 in which case USER->id is used
-     * @param bool $create optional Defaults to false. If set to true a new submission object will be created in the database
-     * @return stdClass The submission
-     */
-    public function get_user_submission_record($userid, $create) {
-        global $DB, $USER;
 
-        if (!$userid) {
-            $userid = $USER->id;
-        }
-        // if the userid is not null then use userid
-        $submission = $DB->get_record('assign_mobas', array('assignment'=>$this->assignment->get_instance()->id, 'userid'=>$userid));
-
-        if ($submission) {
-            return $submission;
-        }
-        if ($create) {
-            $submission = new stdClass();
-            $submission->assignment   = $this->assignment->get_instance()->id;
-            $submission->userid       = $userid;
-            $submission->timecreated = time();
-            $submission->timemodified = $submission->timecreated;
-
-            if ($this->assignment->get_instance()->submissiondrafts) {
-                $submission->status = ASSIGN_SUBMISSION_STATUS_DRAFT;
-            } else {
-                $submission->status = ASSIGN_SUBMISSION_STATUS_SUBMITTED;
-            }
-            $sid = $DB->insert_record('assign_submission', $submission);
-            $submission->id = $sid;
-            return $submission;
-        }
-        return false;
-    }
-    
-    /**
-     * Get file submission information from the database
-     * 
-     * @global moodle_database $DB
-     * @param int $submissionid
-     * @return mixed 
-     */
-    private function get_file_submission($submissionid) {
+   /**
+    * Get mobas submission information from the database
+    *
+    * @param  int $submissionid
+    * @return mixed
+    */
+    private function get_mobas_submission($submissionid) {
         global $DB;
+
         return $DB->get_record('assignsubmission_mobas', array('submission'=>$submissionid));
     }
-    
+
+    public function enabled(){
+        //It seems like each assignment can return objects for each submission type whether enabled or not. So I'm doing this, but there should be a better way.
+        if ($this->get_config('enabled')) {
+            return true;
+            }
+        return false;
+    }
+/*
+* info for external client
+*/
+    public function get_info(){
+        $mobastype=$this->get_config('type');
+        $mobassubmitcode=$this->get_config('submitcode');
+        $mobascontent=$this->get_config('content');
+        return array('mtype'=>$mobastype,'submitcode'=>$mobassubmitcode,'content'=>$mobascontent);
+
+    }
+
     /**
      * Get the default setting for mobas submission plugin
      *
@@ -115,21 +89,29 @@ class assign_submission_mobas extends assign_submission_plugin {
         global $CFG, $COURSE;
 
         $mobastype=$this->get_config('type');
+        $mobassubmitcode=$this->get_config('submitcode');
+        $mobascontent=$this->get_config('content');
 
         // Adding the rest of mobas settings, spreeading all them into this fieldset
         // or adding more fieldsets ('header' elements) if needed for better logic
 
-        $mform->addElement('html','<p>These settings are for students using the mobas app to submit different types of assignment</p>');
 
-        $mform->addElement('editor', 'mobascontent', get_string('lblcontent','assignsubmission_mobas'));
-        $mform->setType('contenteditor', PARAM_RAW); // no XSS prevention here, users must be trusted
-        $mform->disabledIf('assignsubmission_mobascontent', 'assignsubmission_mobas_enabled', 'eq', 0);
         $options = array(1 =>'Work Diary',2=>'Create Procedure/Process',3=>'Job Safety Analysis',4=>'Demonstration Checklist');
         $mform->addElement('select', 'assignsubmission_mobas_type', get_string('lbltype', 'assignsubmission_mobas'), $options);
         $mform->setDefault('assignsubmission_mobas_type',$mobastype);
-
         $mform->addHelpButton('assignsubmission_mobas_type', 'lbltype', 'assignsubmission_mobas');
         $mform->disabledIf('assignsubmission_mobas_type', 'assignsubmission_mobas_enabled', 'eq', 0);
+        $mform->addElement('textarea', 'assignsubmission_mobas_content', get_string('lblcontent','assignsubmission_mobas'),'wrap="virtual" rows="10" cols="50" style="padding:1ex"');
+        $mform->setDefault('assignsubmission_mobas_content',$mobascontent);
+        $mform->addHelpButton('assignsubmission_mobas_content', 'lblcontent', 'assignsubmission_mobas');
+        $mform->disabledIf('assignsubmission_mobas_content', 'assignsubmission_mobas_type', 'neq', 4);
+        $mform->disabledIf('assignsubmission_mobas_content', 'assignsubmission_mobas_enabled', 'eq', 0);
+        $mform->addElement('passwordunmask','assignsubmission_mobas_submitcode',get_string('lblsubmitcode','assignsubmission_mobas'),array());
+        $mform->setDefault('assignsubmission_mobas_submitcode',$mobassubmitcode);
+        $mform->addHelpButton('assignsubmission_mobas_submitcode', 'lblsubmitcode', 'assignsubmission_mobas');
+        $mform->disabledIf('assignsubmission_mobas_submitcode', 'assignsubmission_mobas_type', 'neq', 4);
+        $mform->disabledIf('assignsubmission_mobas_submitcode', 'assignsubmission_mobas_enabled', 'eq', 0);
+        $mform->addElement('html','<hr width="75%">');
     }
     
     /**
@@ -140,148 +122,361 @@ class assign_submission_mobas extends assign_submission_plugin {
      */
     public function save_settings(stdClass $data) {
         $this->set_config('type', $data->assignsubmission_mobas_type);
+        $this->set_config('submitcode', $data->assignsubmission_mobas_submitcode);
+        $this->set_config('content', $data->assignsubmission_mobas_content);
         return true;
     }
 
 
-   
     /**
-     * Add elements to submission form
-     * 
-     * @param mixed stdClass|null $submission
-     * @param MoodleQuickForm $submission
+     * Add form elements for settings
+     *
+     * @param mixed $submission can be null
+     * @param MoodleQuickForm $mform
      * @param stdClass $data
-     * @return bool 
+     * @return true if elements were added to the form
      */
+     //todo: add the nb form setup stuff
+     //alter because no choice of format?
     public function get_form_elements($submission, MoodleQuickForm $mform, stdClass $data) {
-        global $CFG, $USER;
+        $elements = array();
+
+        $editoroptions = $this->get_edit_options();
         $submissionid = $submission ? $submission->id : 0;
-        $maxfiles = $this->get_config('maxfilesubmissions');
-        $defaultname = $this->get_config('defaultname');
-        $allownameoverride = $this->get_config('nameoverride');
-        if ($maxfiles <= 0) {
-            return false;
+
+        if (!isset($data->mobas)) {
+            $data->mobas = '';
         }
-        $count = $this->count_files($submissionid, ASSIGN_FILEAREA_SUBMISSION_ONLINEAUDIO);
-        /*
-        if($count < $maxfiles) {
-            $url='submission/onlineaudio/assets/recorder.swf?gateway='.$CFG->wwwroot.'/mod/assign/submission/onlineaudio/upload.php';
+        if (!isset($data->mobasformat)) {
+            $data->mobasformat = 1;
+        }
 
-            $flashvars="&filefield=assignment_file&id={$this->assignment->get_course_module()->id}&sid={$submissionid}";
-
-            if($defaultname) {
-                $field=($allownameoverride)?'filename':'forcename';
-                $filename=($defaultname==2)?fullname($USER):$USER->username;
-                $filename=clean_filename($filename);
-                $assignname=clean_filename($this->assignment->get_instance()->name);
-                $coursename=clean_filename($this->assignment->get_course()->shortname);
-                $filename.='_-_'.substr($assignname,0,20).'_-_'.$coursename.'_-_'.date('Y-m-d');
-                $filename=str_replace(' ', '_', $filename);
-                $flashvars .= "&$field=$filename";
+        if ($submission) {
+            $mobassubmission = $this->get_mobas_submission($submission->id);
+            if ($mobassubmission) {
+                $data->mobas = $mobassubmission->mobas;
+                $data->mobasformat = 1;
             }
 
-            $html = '<script type="text/javascript" src="submission/onlineaudio/assets/swfobject.js"></script>
-                <script type="text/javascript">
-                swfobject.registerObject("onlineaudiorecorder", "10.1.0", "submission/onlineaudio/assets/expressInstall.swf");
-                </script>';
-
-            $html .= '<div id="onlineaudiorecordersection" style="float:left">
-                <object id="onlineaudiorecorder" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="215" height="138">
-                        <param name="movie" value="'.$url.$flashvars.'" />
-                        <!--[if !IE]>-->
-                        <object type="application/x-shockwave-flash" data="'.$url.$flashvars.'" width="215" height="138">
-                        <!--<![endif]-->
-                        <div>
-                                <p><a href="http://www.adobe.com/go/getflashplayer"><img src="http://www.adobe.com/images/shared/download_buttons/get_flash_player.gif" alt="Get Adobe Flash player" /></a></p>
-                        </div>
-                        <!--[if !IE]>-->
-                        </object>
-                        <!--<![endif]-->
-                </object></div>';
-            $mform->addElement('html', $html);
-        } else {
-            $mform->addElement('html', '<p>'.get_string('maxfilesreached', 'assignsubmission_onlineaudio').'</p>');
         }
-        */
-        $mform->addElement('html', $this->print_user_files($submissionid));
-        
+
+
+        //$data = file_prepare_standard_editor($data, 'mobas', $editoroptions, $this->assignment->get_context(), 'assignsubmission_mobas', ASSIGNSUBMISSION_ONLINETEXT_FILEAREA, $submissionid);
+        $mform->addElement('editor', 'mobas_editor', '', null, $editoroptions);
         return true;
     }
 
-
-    /**
-     * No full submission view - the summary contains the list of files and that is the whole submission
-     * 
-     * @param stdClass $submission
-     * @return string 
-     */
-    public function view(stdClass $submission) {
-        return $this->assignment->render_area_files('assignsubmission_mobas', ASSIGN_FILEAREA_SUBMISSION_MOBAS, $submission->id);
+    public function check_submitcode($code){
+        if ($this->get_config('type')!=4 || $this->get_config('submitcode')==$code){
+            return true;
+        }
+       return false; 
     }
-    
+    /**
+     * Editor format options
+     *
+     * @return array
+     */
+    private function get_edit_options() {
+         $editoroptions = array(
+           'noclean' => false,
+           'maxfiles' => 0,     //EDITOR_UNLIMITED_FILES,
+           'maxbytes' => $this->assignment->get_course()->maxbytes,
+           'context' => $this->assignment->get_context(),
+           'return_types' => FILE_INTERNAL | FILE_EXTERNAL
+        );
+        return $editoroptions;
+    }
 
+     /**
+      * Save data to the database and trigger plagiarism plugin, if enabled, to scan the uploaded content via events trigger
+      *
+      * @param stdClass $submission
+      * @param stdClass $data
+      * @return bool
+      */
+
+
+   //todo: how do we say assignment is submitted?
+     public function save_mobile(stdClass $submission, stdClass $data){
+        global $USER, $DB;
+        $mobassubmission=$this->get_mobas_submission($submission->id);
+         // Let Moodle know that an assessable content was uploaded (eg for plagiarism detection)
+        $eventdata = new stdClass();
+        $eventdata->modulename = 'assign';
+        $eventdata->cmid = $this->assignment->get_course_module()->id;
+        $eventdata->itemid = $submission->id;
+        $eventdata->courseid = $this->assignment->get_course()->id;
+        $eventdata->userid = $USER->id;
+        //todo: fix this... don't use format_text...
+        $eventdata->content = trim(format_text($data->mobas,1, array('context'=>$this->assignment->get_context())));
+        events_trigger('assessable_content_uploaded', $eventdata);
+
+        if ($mobassubmission) {
+            $mobassubmission->mobas = $data->mobas;
+            $mobassubmission->onlineformat = 1;
+            return $DB->update_record('assignsubmission_mobas', $mobassubmission);
+        } else {
+            $mobassubmission = new stdClass();
+            $mobassubmission->mobas = $data->mobas;
+            $mobassubmission->onlineformat = 1;
+            $mobassubmission->submission = $submission->id;
+            $mobassubmission->assignment = $this->assignment->get_instance()->id;
+            return $DB->insert_record('assignsubmission_mobas', $mobassubmission) > 0;
+        }
+
+}
+
+     public function save(stdClass $submission, stdClass $data) {
+        global $USER, $DB;
+
+        $editoroptions = $this->get_edit_options();
+
+        $data = file_postupdate_standard_editor($data, 'mobas', $editoroptions, $this->assignment->get_context(), 'assignsubmission_mobas', ASSIGNSUBMISSION_ONLINETEXT_FILEAREA, $submission->id);
+
+        $mobassubmission = $this->get_mobas_submission($submission->id);
+
+        //$fs = get_file_storage();
+        //$files = $fs->get_area_files($this->assignment->get_context()->id, 'assignsubmission_mobas', ASSIGNSUBMISSION_ONLINETEXT_FILEAREA, $submission->id, "id", false);
+        // Let Moodle know that an assessable content was uploaded (eg for plagiarism detection)
+        $eventdata = new stdClass();
+        $eventdata->modulename = 'assign';
+        $eventdata->cmid = $this->assignment->get_course_module()->id;
+        $eventdata->itemid = $submission->id;
+        $eventdata->courseid = $this->assignment->get_course()->id;
+        $eventdata->userid = $USER->id;
+        $eventdata->content = trim(format_text($data->mobas, $data->mobas_editor['format'], array('context'=>$this->assignment->get_context())));
+        if ($files) {
+            $eventdata->pathnamehashes = array_keys($files);
+        }
+        events_trigger('assessable_content_uploaded', $eventdata);
+
+        if ($mobassubmission) {
+
+            $mobassubmission->mobas = $data->mobas;
+            $mobassubmission->onlineformat = $data->mobas_editor['format'];
+
+
+            return $DB->update_record('assignsubmission_mobas', $mobassubmission);
+        } else {
+
+            $mobassubmission = new stdClass();
+            $mobassubmission->mobas = $data->mobas;
+            $mobassubmission->onlineformat = $data->mobas_editor['format'];
+
+            $mobassubmission->submission = $submission->id;
+            $mobassubmission->assignment = $this->assignment->get_instance()->id;
+            return $DB->insert_record('assignsubmission_mobas', $mobassubmission) > 0;
+        }
+
+
+    }
 
     /**
-     * Return true if this plugin can upgrade an old Moodle 2.2 assignment of this type
-     * and version.
-     * 
-     * @param string $type
-     * @param int $version
+     * Return a list of the text fields that can be imported/exported by this plugin
+     *
+     * @return array An array of field names and descriptions. (name=>description, ...)
+     */
+    public function get_editor_fields() {
+        return array('mobas' => get_string('pluginname', 'assignsubmission_comments'));
+    }
+
+    /**
+     * Get the saved text content from the editor
+     *
+     * @param string $name
+     * @param int $submissionid
+     * @return string
+     */
+    public function get_editor_text($name, $submissionid) {
+        if ($name == 'mobas') {
+            $mobassubmission = $this->get_mobas_submission($submissionid);
+            if ($mobassubmission) {
+                return $mobassubmission->mobas;
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Get the content format for the editor
+     *
+     * @param string $name
+     * @param int $submissionid
+     * @return int
+     */
+    public function get_editor_format($name, $submissionid) {
+        if ($name == 'mobas') {
+            $mobassubmission = $this->get_mobas_submission($submissionid);
+            if ($mobassubmission) {
+                return $mobassubmission->onlineformat;
+            }
+        }
+
+
+         return 0;
+    }
+
+
+     /**
+      * Display mobas word count in the submission status table
+      *
+      * @param stdClass $submission
+      * @param bool $showviewlink - If the summary has been truncated set this to true
+      * @return string
+      */
+    public function view_summary(stdClass $submission, & $showviewlink) {
+        global $CFG;
+
+        $mobassubmission = $this->get_mobas_submission($submission->id);
+        // always show the view link
+        $showviewlink = true;
+        if ($mobassubmission) {
+           $plagiarismlinks = '';
+            if (!empty($CFG->enableplagiarism)) {
+                require_once($CFG->libdir . '/plagiarismlib.php');
+                $plagiarismlinks .= plagiarism_get_links(array('userid' => $submission->userid,
+                    'content' => trim(format_text($mobassubmission->mobas, $mobassubmission->onlineformat, array('context'=>$this->assignment->get_context()))),
+                    'cmid' => $this->assignment->get_course_module()->id,
+                    'course' => $this->assignment->get_course()->id,
+                    'assignment' => $submission->assignment));
+            }
+            return $plagiarismlinks.get_string('numwords', 'assignsubmission_mobas', count_words($mobassubmission->mobas));
+        }
+        return '';
+    }
+
+    /**
+     * Produce a list of files suitable for export that represent this submission
+     *
+     * @param stdClass $submission - For this is the submission data
+     * @return array - return an array of files indexed by filename
+     */
+    public function get_files(stdClass $submission) {
+        global $DB;
+        $files = array();
+        $mobassubmission = $this->get_mobas_submission($submission->id);
+        if ($mobassubmission) {
+            $user = $DB->get_record("user", array("id"=>$submission->userid),'id,username,firstname,lastname', MUST_EXIST);
+
+            if (!$this->assignment->is_blind_marking()) {
+                $filename = str_replace('_', '', fullname($user)) . '_' .
+                            $this->assignment->get_uniqueid_for_user($submission->userid) . '_' .
+                            $this->get_name() . '_';
+                $prefix = clean_filename($filename);
+            } else {
+                $filename = get_string('participant', 'assign') . '_' .
+                            $this->assignment->get_uniqueid_for_user($submission->userid) . '_' .
+                            $this->get_name() . '_';
+                $prefix = clean_filename($filename);
+            }
+
+            $finaltext = str_replace('@@PLUGINFILE@@/', $prefix, $mobassubmission->mobas);
+            $submissioncontent = "<html><body>". format_text($finaltext, $mobassubmission->onlineformat, array('context'=>$this->assignment->get_context())). "</body></html>";      //fetched from database
+
+            $files[get_string('mobasfilename', 'assignsubmission_mobas')] = array($submissioncontent);
+
+            $fs = get_file_storage();
+
+            $fsfiles = $fs->get_area_files($this->assignment->get_context()->id, 'assignsubmission_mobas', ASSIGNSUBMISSION_ONLINETEXT_FILEAREA, $submission->id, "timemodified", false);
+
+            foreach ($fsfiles as $file) {
+                $files[$file->get_filename()] = $file;
+            }
+        }
+
+        return $files;
+    }
+
+    /**
+     * Display the saved text content from the editor in the view table
+     *
+     * @param stdClass $submission
+     * @return string
+     */
+    //todo: may want to change this to have link to open in popup? pics through out the view table
+    public function view(stdClass $submission) {
+        $result = '';
+
+        $mobassubmission = $this->get_mobas_submission($submission->id);
+
+
+        if ($mobassubmission) {
+
+            // render for portfolio API
+            $result .= $mobassubmission->mobas;
+
+        }
+
+        return $result;
+    }
+
+     /**
+     * Return true if this plugin can upgrade an old Moodle 2.2 assignment of this type and version.
+     *
+     * @param string $type old assignment subtype
+     * @param int $version old assignment version
      * @return bool True if upgrade is possible
      */
     public function can_upgrade($type, $version) {
         return false;
     }
-  
-    
+
+
+
+    /**
+     * Formatting for log info
+     *
+     * @param stdClass $submission The new submission
+     * @return string
+     */
+    public function format_for_log(stdClass $submission) {
+        // format the info for each submission plugin add_to_log
+        $mobassubmission = $this->get_mobas_submission($submission->id);
+        $mobasloginfo = '';
+        $text = format_text($mobassubmission->mobas,
+                            $mobassubmission->onlineformat,
+                            array('context'=>$this->assignment->get_context()));
+        $mobasloginfo .= get_string('numwordsforlog', 'assignsubmission_mobas', count_words($text));
+
+        return $mobasloginfo;
+    }
 
     /**
      * The assignment has been deleted - cleanup
-     * 
-     * @global moodle_database $DB
+     *
      * @return bool
      */
     public function delete_instance() {
         global $DB;
         // will throw exception on failure
         $DB->delete_records('assignsubmission_mobas', array('assignment'=>$this->assignment->get_instance()->id));
-        
+
         return true;
     }
-    
-    /**
-     * Formatting for log info
-     * 
-     * @param stdClass $submission The submission
-     * 
-     * @return string
-     */
-    public function format_for_log(stdClass $submission) {
-        // format the info for each submission plugin add_to_log
-        $filecount = $this->count_files($submission->id, ASSIGN_FILEAREA_SUBMISSION_MOBAS);
-        $fileloginfo = '';
-        $fileloginfo .= ' the number of file(s) : ' . $filecount . " file(s).<br>";
-
-        return $fileloginfo;
-    }
 
     /**
-     * Return true if there are no submission files
+     * No text is set for this plugin
+     *
+     * @param stdClass $submission
+     * @return bool
      */
     public function is_empty(stdClass $submission) {
-        return $this->count_files($submission->id, ASSIGN_FILEAREA_SUBMISSION_MOBAS) == 0;
+        $mobassubmission = $this->get_mobas_submission($submission->id);
+
+        return empty($mobassubmission->mobas);
     }
 
     /**
      * Get file areas returns a list of areas this plugin stores files
      * @return array - An array of fileareas (keys) and descriptions (values)
      */
+     //todo: may not need this
     public function get_file_areas() {
-        return array(ASSIGN_FILEAREA_SUBMISSION_MOBAS=>$this->get_name());
+        return array(ASSIGNSUBMISSION_ONLINETEXT_FILEAREA=>$this->get_name());
     }
 
-    //GM had to add
-    public function portfolio_exportable(){
-        return true;
-    }
 }
+
+

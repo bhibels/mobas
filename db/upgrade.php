@@ -15,14 +15,28 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file defines the admin settings for this plugin
+ * Upgrade code for install
  *
  * @package   assignsubmission_mobas
  * @copyright 2013 Box Hill Institute
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$settings->add(new admin_setting_configcheckbox('assignsubmission_mobas/default',
-                   new lang_string('default', 'assignsubmission_mobas'),
-                   new lang_string('default_help', 'assignsubmission_mobas'), 0));
+/**
+ * Stub for upgrade code
+ * @param int $oldversion
+ * @return bool
+ */
+function xmldb_assignsubmission_mobas_upgrade($oldversion) {
+    // Moodle v2.3.0 release upgrade line
+    // Put any upgrade step following this
+
+
+    // Moodle v2.4.0 release upgrade line
+    // Put any upgrade step following this
+
+
+    return true;
+}
+
 
