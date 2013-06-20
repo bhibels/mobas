@@ -47,7 +47,7 @@ class mod_assign_submission_mobas_external extends external_api {
                        $cm = get_coursemodule_from_id('assign', $module->id, 0, false, MUST_EXIST);
                        $assign = new assign($context,$cm,$courses[$id]->id);
                        $mobas=$assign->get_submission_plugin_by_type('mobas');
-                       if ($mobas->enabled()){
+                       if ($mobas->enabled()){//check various things
                             $a=$assign->get_instance();
                             $m=array('id'=>$a->id,
                             'name'=>$a->name,

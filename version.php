@@ -26,7 +26,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2013060300;
-//todo: change requires version to recent 2.4.1
-$plugin->requires  = 2012010100;
+$plugin->version   = 2013061800;
+$plugin->requires  = 2012120301;
 $plugin->component = 'assignsubmission_mobas';
