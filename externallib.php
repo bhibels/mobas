@@ -36,11 +36,11 @@ class mod_assign_submission_mobas_external extends external_api {
         $mobasar=array();
         $fields = 'sortorder,shortname,fullname,timemodified';
         $courses = enrol_get_users_courses($USER->id, true, $fields);
-
         //this is from assign/externallib, but not so robust
         foreach ($courses as $id => $course) {
             if ($modules = get_coursemodules_in_course('assign', $courses[$id]->id)) {
                 foreach ($modules as $module) {
+                   if (!$module->visible) continue; //should probably be checking user-visible because of conditional release etc, but l8r
                    $context = context_module::instance($module->id); //the assign id
                    if (has_capability('mod/assign:submit', $context)){
                        //$submission = $assign->get_user_submission($USER->id, true);
@@ -82,7 +82,6 @@ class mod_assign_submission_mobas_external extends external_api {
                           'duedate'=>new external_value(PARAM_INT,'due date'),
                           'allowsubmissionsfromdate'=>new external_value(PARAM_INT,'submissions from'),
                           'mtype'=>new external_value(PARAM_TEXT,'mobas type'), //is an int but stored as text in db
-                          'submitcode'=>new external_value(PARAM_TEXT,'mobas submit code'),
                           'content'=>new external_value(PARAM_RAW,'mobas content')
                 )
             )

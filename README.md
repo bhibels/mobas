@@ -26,11 +26,7 @@ See Moodle's documentation on [Using Web Services](http://docs.moodle.org/24/en/
 
 Users of the app need the moodle/create:token capability. This can be given to all authenticated users.
 
-Mobas creates a specific web service containing the functions it requires. Currently there is one component of this which much be done manually in the moodle database.
-After mobas is installed, there will be a row in Moodle's external_services table as follows:
-
-The "shortname" field must be altered to contain 'mobas' so that the mobile application can talk to moodle. This must be done directly in the database for now, see MDL-29807
-
+Mobas creates a specific web service containing the functions it requires.
 
 
 ##Mobile Application

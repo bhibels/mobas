@@ -61,10 +61,6 @@ class assign_submission_mobas extends assign_submission_plugin {
 
     public function enabled(){
         //todo:It seems like each assignment can return objects for each submission type whether enabled or not. So I'm doing this, but there should be a better way. Similarly for the assignment checks,  submission_open errors with a missing courseid, so I'm not sure what's going on.
-        $a=$this->assignment->get_instance();
-
-        if ($a->allowsubmissionsfromdate > time()) return false;
-        if ($a->duedate < time()) return false;
         if ($this->get_config('enabled') ) return true;
         
         return false;
@@ -74,9 +70,8 @@ class assign_submission_mobas extends assign_submission_plugin {
 */
     public function get_info(){
         $mobastype=$this->get_config('type');
-        $mobassubmitcode=$this->get_config('submitcode');
         $mobascontent=$this->get_config('content');
-        return array('mtype'=>$mobastype,'submitcode'=>$mobassubmitcode,'content'=>$mobascontent);
+        return array('mtype'=>$mobastype,'content'=>$mobascontent);
 
     }
 
@@ -92,12 +87,10 @@ class assign_submission_mobas extends assign_submission_plugin {
         global $CFG, $COURSE;
 
         $mobastype=$this->get_config('type');
-        $mobassubmitcode=$this->get_config('submitcode') || '';
-        $mobascontent=$this->get_config('content') || '';
-
+        $mobassubmitcode=$this->get_config('submitcode')?$this->get_config('submitcode'):'';
+        $mobascontent=$this->get_config('content')?$this->get_config('content'):'';
         // Adding the rest of mobas settings, spreeading all them into this fieldset
         // or adding more fieldsets ('header' elements) if needed for better logic
-
 
         $options = array(1 =>'Work Diary',2=>'Create Procedure/Process',3=>'Job Safety Analysis',4=>'Demonstration Checklist');
         $mform->addElement('select', 'assignsubmission_mobas_type', get_string('lbltype', 'assignsubmission_mobas'), $options);
@@ -144,11 +137,11 @@ class assign_submission_mobas extends assign_submission_plugin {
     public function get_form_elements($submission, MoodleQuickForm $mform, stdClass $data) {
         $elements = array();
 
-        $editoroptions = $this->get_edit_options();
+        //$editoroptions = $this->get_edit_options();
         $submissionid = $submission ? $submission->id : 0;
 
-        if (!isset($data->mobas)) {
-            $data->mobas = '';
+        if (!isset($data->content)) {
+            $data->content = '';
         }
         if (!isset($data->mobasformat)) {
             $data->mobasformat = 1;
